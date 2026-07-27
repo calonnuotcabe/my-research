@@ -326,3 +326,89 @@ static const TypeInfo maria_info = {
     .interfaces = interfaces,
 };
 ```
+After the type "maria" being create/init, `maria_class_init()` being run: </br>
+
+```c
+static void maria_class_init(ObjectClass *klass, void *data)
+{
+    DeviceClass *dc = DEVICE_CLASS(klass);
+    PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
+
+    k->realize = pci_maria_realize; 
+    /*
+     * When a Maria pci dev is realized, call pci_maria_realize
+     */
+
+    k->vendor_id = 0x1234;
+    k->device_id = 0xdead;
+    /*
+    00:05.0 Class 00ff: 1234(vendor id) :dead (dev id)
+    */
+
+    k->class_id  = PCI_CLASS_OTHERS;
+
+    dc->desc = "Maria PCI Device";
+    //description
+}
+```
+
+if run.sh has the command `-device maria` => In QOM registry, QEMU found `.name = "maria"` => Allocate sizeof(MariaState) => Create Maria object => Call maria_instance_init() </br>
+
+In `maria_instance_init()`: </br>
+
+```c
+static void maria_instance_init(Object *obj)
+{
+    MariaState *maria = MARIA(obj);
+
+    maria->src = 0;  
+    maria->off = 0;
+
+    memset(maria->buff, 0, sizeof(maria->buff));
+}
+```
+
+When maria being realized, `pci_maria_realize(pdev, errp);` will be called: </br>
+
+```c
+static void pci_maria_realize(PCIDevice *pdev, Error **errp) {
+    MariaState *maria = MARIA(pdev);
+    memory_region_init_io(
+        &maria->mmio,     //memory-mapped-i/o
+        OBJECT(maria),    //owner of the memory region
+        &maria_mmio_ops,  //callback operations
+        maria,            //opaque for the maria instance
+        "maria-mmio",     //region name
+        MARIA_MMIO_SIZE   //size
+        );
+    //Create a memoryRegion:
+    pci_register_bar(pdev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &maria->mmio); //maria->mmio is attached to BAR0
+}
+```
+Operations when you write/read the device: </br>
+```c
+static const MemoryRegionOps maria_mmio_ops = {
+    .read = maria_mmio_read,  
+    .write = maria_mmio_write,
+    .endianness = DEVICE_NATIVE_ENDIAN,
+    .valid = {
+        .min_access_size = 4,
+        .max_access_size = 4,
+    },
+    .impl = {
+        .min_access_size = 4,
+        .max_access_size = 4,
+    },
+};
+
+```
+
+Hierarchy: </br>
+```
+Instance:
+Object → DeviceState → PCIDevice → MariaState
+
+Class:
+ObjectClass → DeviceClass → PCIDeviceClass → Maria class
+```
+
