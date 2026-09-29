@@ -435,5 +435,5 @@ int main(void)
 **Thanks to llh.lam, _alight.o_o, and haidagn for carrying me through the whole project in my uni and helping me finish this shit. </br>**
 **Shout-out to Linus Torvalds for creating such a well-developed operating system. </br>**
 **Shout-out to kasero for being the GOAT. </br>**
-**Special shout-out to hvk2898 and all the girls I followed on IG for being an irreplaceable source of motivation as I worked toward my goal. </br>**
+**Special shout-out to all my bros for being an irreplaceable source of motivation as I worked toward my goal. </br>**
 **You will always be the fire burning in the left side of my chest, carrying me through the longest nights. </br>**
