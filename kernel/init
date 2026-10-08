@@ -1,0 +1,15 @@
+#!/bin/sh
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+
+echo "============================"
+echo "Your kernel are ready to use!"
+echo "use insmod <module_name>.ko"
+echo "use rmmod <module_name>"
+echo "'When you were born, you look"
+echo "like your parent."
+echo "When you died, you look like"
+echo "your decisions."
+echo "============================"
+exec /bin/sh
