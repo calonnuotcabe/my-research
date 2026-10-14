@@ -1,0 +1,1 @@
+cmd_/kernel/initramfs/mnt/vuln.ko := ld -r -m elf_x86_64 -T /kernel/linux-2.6.32/scripts/module-common.lds --build-id -o /kernel/initramfs/mnt/vuln.ko /kernel/initramfs/mnt/vuln.o /kernel/initramfs/mnt/vuln.mod.o

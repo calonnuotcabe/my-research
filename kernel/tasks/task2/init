@@ -29,4 +29,7 @@ echo "[+] holstein major: ${TASK_MAJOR}"
 echo
 echo "[ Holstein v1 (LK01) - Pawnyable ]"
 echo
-exec /bin/setsid /bin/cttyhack /bin/setuidgid 1337 /bin/sh
+/bin/setsid /bin/cttyhack /bin/setuidgid 1337 /bin/sh
+
+echo "[+] guest shell exited; powering off"
+/bin/poweroff -f

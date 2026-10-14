@@ -1,0 +1,35 @@
+#!/bin/sh
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+/bin/mount -t proc proc /proc
+/bin/mount -t sysfs sysfs /sys
+/bin/mkdir -p /dev/pts
+/bin/mount -t devpts devpts /dev/pts
+/bin/mdev -s
+/bin/chmod 666 /dev/ptmx 2>/dev/null
+/bin/stty -opost 2>/dev/null
+
+echo 2 > /proc/sys/kernel/kptr_restrict 2>/dev/null
+
+echo "[+] Loading Holstein driver"
+/bin/insmod /mnt/vuln.ko
+
+TASK_MAJOR=$(/bin/awk '$2 == "holstein" { print $1 }' /proc/devices)
+if [ -z "${TASK_MAJOR}" ]; then
+    echo "[-] Failed to find holstein major number"
+    /bin/dmesg
+    exec /bin/sh
+fi
+
+echo "[+] holstein major: ${TASK_MAJOR}"
+/bin/mknod /dev/holstein c "${TASK_MAJOR}" 0
+/bin/chmod 666 /dev/holstein
+
+echo
+echo "[ Holstein v1 (LK01) - Pawnyable ]"
+echo
+/bin/setsid /bin/cttyhack /bin/setuidgid 1337 /bin/sh
+
+echo "[+] guest shell exited; powering off"
+/bin/poweroff -f
