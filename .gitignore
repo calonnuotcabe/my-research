@@ -1,0 +1,3 @@
+# Linux 2.6 Kbuild command/dependency metadata.
+# These hidden .cmd files are generated during kernel/module builds.
+kernel/**/.*.cmd
