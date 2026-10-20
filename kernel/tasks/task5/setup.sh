@@ -1,10 +1,10 @@
-#!/bin/sh 
+#!/bin/sh
 set -eu
 
 cd "$(dirname "$0")"
 
-if [ ! -f initramfs-root/solve ]; then
-    echo "missing initramfs-root/solve: compile your solve.c as a static binary first" >&2
+if [ ! -f initramfs-root/root/vuln.ko ]; then
+    echo "missing initramfs-root/root/vuln.ko" >&2
     exit 1
 fi
 

